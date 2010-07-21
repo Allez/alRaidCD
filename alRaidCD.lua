@@ -76,8 +76,8 @@ local StartTimer = function(name, spell)
 	end
 	bar.endTime = GetTime() + spells[spell]
 	bar.startTime = GetTime()
-	bar.name = bar:CreateFontString(nil, 'OVERLAY')
-	bar.name:SetFont(GameFontNormal:GetFont(), 12, 'OUTLINE')
+	bar.name = bar:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+	bar.name:SetFont(GameFontNormal:GetFont(), 12)
 	bar.name:SetPoint('LEFT', 2, 0)
 	bar.name:SetJustifyH('LEFT')
 	bar.name:SetText(name)
