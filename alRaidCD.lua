@@ -1,12 +1,12 @@
 
 -- Config start
 local anchor = "TOPLEFT"
-local x, y = 170, -20
-local width, height = 150, 15
-local spacing = 1
-local bar_backdrop = false
-local backdrop_color = {0, 0, 0, 0.5}
-local border_color = {0, 0, 0, 1}
+local x, y = 185, -20
+local width, height = 130, 14
+local spacing = 2
+local bar_backdrop = true
+local backdrop_color = {0, 0, 0, 0.4}
+local border_color = {0, 0, 0, 0}
 local texture = "Interface\\TargetingFrame\\UI-StatusBar"
 -- Config end
 
@@ -18,8 +18,11 @@ local spells = {
 	[GetSpellInfo(29166)] = 180,	-- Innervate
 	[GetSpellInfo(32182)] = 300,	-- Heroism
 	[GetSpellInfo(2825)]  = 300,	-- Bloodlust
-	[GetSpellInfo(20608)] = 900,	-- Reincarnation
+	[GetSpellInfo(20608)] = 1800,	-- Reincarnation
 }
+
+local filter = COMBATLOG_OBJECT_AFFILIATION_RAID + COMBATLOG_OBJECT_AFFILIATION_PARTY + COMBATLOG_OBJECT_AFFILIATION_MINE
+local band = bit.band
 
 local backdrop = {
 	bgFile = [=[Interface\ChatFrame\ChatFrameBackground]=],
@@ -57,16 +60,17 @@ local BarUpdate = function(self, elapsed)
 	self:SetValue(100 - (curTime - self.startTime) / (self.endTime - self.startTime) * 100)
 end
 
-local StartTimer = function(unit, spell)
+local StartTimer = function(name, spell)
 	local bar = CreateFrame("Statusbar", nil, UIParent)
 	bar:SetSize(width, height)
 	bar:SetStatusBarTexture(texture)
 	bar:SetMinMaxValues(0, 100)
 	if bar_backdrop then
 		bar.bg = CreateFrame("frame", nil, bar)
-		bar.bg:SetPoint("TOPLEFT", -1, 1)
-		bar.bg:SetPoint("BOTTOMRIGHT", 1, -1)
+		bar.bg:SetPoint("TOPLEFT", 0, 0)
+		bar.bg:SetPoint("BOTTOMRIGHT", 0, 0)
 		bar.bg:SetBackdrop(backdrop)
+		bar.bg:SetFrameStrata('LOW')
 		bar.bg:SetBackdropColor(unpack(backdrop_color))
 		bar.bg:SetBackdropBorderColor(unpack(border_color))
 	end
@@ -76,31 +80,35 @@ local StartTimer = function(unit, spell)
 	bar.name:SetFont(GameFontNormal:GetFont(), 12, 'OUTLINE')
 	bar.name:SetPoint('LEFT', 2, 0)
 	bar.name:SetJustifyH('LEFT')
-	bar.name:SetText(UnitName(unit))
+	bar.name:SetText(name)
 	bar:Show()
-	local color = RAID_CLASS_COLORS[select(2, UnitClass(unit))]
-	bar:SetStatusbarColor(color.r, color.g, color.b)
+	local color = RAID_CLASS_COLORS[select(2, UnitClass(name))]
+	bar:SetStatusBarColor(color.r, color.g, color.b)
 	bar:SetScript("OnUpdate", BarUpdate)
 	tinsert(bars, bar)
 	UpdatePositions()
 end
 
 local OnEvent = function(self, event, ...)
-	if event == "UNIT_SPELLCAST_SUCCEEDED" then
-		local unit, spell = ...
-		if spells[spell] and unit:find('raid') then
-			StartTimer(unit, spell)
-		end 
+	if event == "COMBAT_LOG_EVENT_UNFILTERED" then
+		local timestamp, eventType, sourceGUID, sourceName, sourceFlags, destGUID, destName, destFlags = select(1, ...)
+		if band(sourceFlags, filter) == 0 then return end
+		if eventType == "SPELL_RESURRECT" or eventType == "SPELL_CAST_SUCCESS" then
+			local spell = GetSpellInfo(select(9, ...))
+			if spells[spell] and select(2, IsInInstance()) == 'raid' then
+				StartTimer(sourceName, spell)
+			end
+		end
 	end
 end
 
 local addon = CreateFrame("frame")
 addon:SetScript('OnEvent', OnEvent)
-addon:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+addon:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 
 SlashCmdList["RaidCD"] = function(msg) 
-	StartTimer('player', GetSpellInfo(48477))
-	StartTimer('player', GetSpellInfo(29166))
-	StartTimer('player', GetSpellInfo(32182))
+	StartTimer(UnitName('player'), GetSpellInfo(48477))
+	StartTimer(UnitName('player'), GetSpellInfo(29166))
+	StartTimer(UnitName('player'), GetSpellInfo(32182))
 end
 SLASH_EnemyCD1 = "/raidcd"
