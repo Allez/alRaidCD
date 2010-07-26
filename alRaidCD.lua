@@ -4,7 +4,6 @@ local anchor = "TOPLEFT"
 local x, y = 185, -20
 local width, height = 130, 14
 local spacing = 2
-local bar_backdrop = true
 local backdrop_color = {0, 0, 0, 0.4}
 local border_color = {0, 0, 0, 0}
 local texture = "Interface\\TargetingFrame\\UI-StatusBar"
@@ -23,6 +22,9 @@ local spells = {
 
 local filter = COMBATLOG_OBJECT_AFFILIATION_RAID + COMBATLOG_OBJECT_AFFILIATION_PARTY + COMBATLOG_OBJECT_AFFILIATION_MINE
 local band = bit.band
+local sformat = string.format
+local floor = math.floor
+local timer = 0
 
 local backdrop = {
 	bgFile = [=[Interface\ChatFrame\ChatFrameBackground]=],
@@ -31,6 +33,20 @@ local backdrop = {
 }
 
 local bars = {}
+
+local FormatTime = function(time)
+	if time >= 60 then
+		return sformat('%d:%d', floor(time / 60), time % 60)
+	else
+		return sformat('%d', time)
+	end
+end
+
+local CreateFS = function(frame, fsize, fstyle)
+	local fstring = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
+	fstring:SetFont(GameFontNormal:GetFont(), fsize, fstyle)
+	return fstring
+end
 
 local UpdatePositions = function()
 	for i = 1, #bars do
@@ -52,39 +68,74 @@ local StopTimer = function(bar)
 end
 
 local BarUpdate = function(self, elapsed)
-	local curTime = GetTime()
-	if self.endTime < curTime then
-		StopTimer(self)
-		return
+	timer = timer + elapsed
+	if timer > 0.5 then
+		local curTime = GetTime()
+		if self.endTime < curTime then
+			StopTimer(self)
+			return
+		end
+		self:SetValue(100 - (curTime - self.startTime) / (self.endTime - self.startTime) * 100)
+		self.right:SetText(FormatTime(self.endTime - curTime))
+		timer = 0
 	end
-	self:SetValue(100 - (curTime - self.startTime) / (self.endTime - self.startTime) * 100)
 end
 
-local StartTimer = function(name, spell)
+local OnEnter = function(self)
+	GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+	GameTooltip:AddLine(self.spell)
+	GameTooltip:SetClampedToScreen(true)
+	GameTooltip:Show()
+end
+
+local OnLeave = function(self)
+	GameTooltip:Hide()
+end
+
+local OnMouseDown = function(self, button)
+	if button == "LeftButton" then
+		SendChatMessage(sformat("Cooldown %s %s: %s", self.left:GetText(), self.spell, self.right:GetText()), "RAID")
+	elseif button == "RightButton" then
+		StopTimer(self)
+	end
+end
+
+local CreateBar = function()
 	local bar = CreateFrame("Statusbar", nil, UIParent)
 	bar:SetSize(width, height)
 	bar:SetStatusBarTexture(texture)
 	bar:SetMinMaxValues(0, 100)
-	if bar_backdrop then
-		bar.bg = CreateFrame("frame", nil, bar)
-		bar.bg:SetPoint("TOPLEFT", 0, 0)
-		bar.bg:SetPoint("BOTTOMRIGHT", 0, 0)
-		bar.bg:SetBackdrop(backdrop)
-		bar.bg:SetFrameStrata('LOW')
-		bar.bg:SetBackdropColor(unpack(backdrop_color))
-		bar.bg:SetBackdropBorderColor(unpack(border_color))
-	end
+	bar.bg = CreateFrame("frame", nil, bar)
+	bar.bg:SetPoint("TOPLEFT", 0, 0)
+	bar.bg:SetPoint("BOTTOMRIGHT", 0, 0)
+	bar.bg:SetBackdrop(backdrop)
+	bar.bg:SetFrameStrata('LOW')
+	bar.bg:SetBackdropColor(unpack(backdrop_color))
+	bar.bg:SetBackdropBorderColor(unpack(border_color))
+	bar.left = CreateFS(bar, 12)
+	bar.left:SetPoint('LEFT', 2, 0)
+	bar.left:SetJustifyH('LEFT')
+	bar.right = CreateFS(bar, 12)
+	bar.right:SetPoint('RIGHT', -2, 0)
+	bar.right:SetJustifyH('RIGHT')
+	return bar
+end
+
+local StartTimer = function(name, spell)
+	local bar = CreateBar()
 	bar.endTime = GetTime() + spells[spell]
 	bar.startTime = GetTime()
-	bar.name = bar:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-	bar.name:SetFont(GameFontNormal:GetFont(), 12)
-	bar.name:SetPoint('LEFT', 2, 0)
-	bar.name:SetJustifyH('LEFT')
-	bar.name:SetText(name)
+	bar.left:SetText(name)
+	bar.right:SetText(FormatTime(spells[spell]))
+	bar.spell = spell
 	bar:Show()
 	local color = RAID_CLASS_COLORS[select(2, UnitClass(name))]
 	bar:SetStatusBarColor(color.r, color.g, color.b)
 	bar:SetScript("OnUpdate", BarUpdate)
+	bar:EnableMouse(true)
+	bar:SetScript("OnEnter", OnEnter)
+	bar:SetScript("OnLeave", OnLeave)
+	bar:SetScript("OnMouseDown", OnMouseDown)
 	tinsert(bars, bar)
 	UpdatePositions()
 end
@@ -111,4 +162,4 @@ SlashCmdList["RaidCD"] = function(msg)
 	StartTimer(UnitName('player'), GetSpellInfo(29166))
 	StartTimer(UnitName('player'), GetSpellInfo(32182))
 end
-SLASH_EnemyCD1 = "/raidcd"
+SLASH_RaidCD1 = "/raidcd"
