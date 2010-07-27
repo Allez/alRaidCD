@@ -1,4 +1,3 @@
-
 -- Config start
 local anchor = "TOPLEFT"
 local x, y = 185, -20
@@ -12,7 +11,7 @@ local texture = "Interface\\TargetingFrame\\UI-StatusBar"
 
 local spells = {
 	[GetSpellInfo(48477)] = 600,	-- Rebirth
-	[GetSpellInfo(47883)] = 900,	-- Soulstone
+	[GetSpellInfo(6203)]  = 900,	-- Soulstone
 	[GetSpellInfo(6346)]  = 180,	-- Fear Ward
 	[GetSpellInfo(29166)] = 180,	-- Innervate
 	[GetSpellInfo(32182)] = 300,	-- Heroism
@@ -36,9 +35,9 @@ local bars = {}
 
 local FormatTime = function(time)
 	if time >= 60 then
-		return sformat('%d:%d', floor(time / 60), time % 60)
+		return sformat('%.2d:%.2d', floor(time / 60), time % 60)
 	else
-		return sformat('%d', time)
+		return sformat('%.2d', time)
 	end
 end
 
@@ -68,17 +67,13 @@ local StopTimer = function(bar)
 end
 
 local BarUpdate = function(self, elapsed)
-	timer = timer + elapsed
-	if timer > 0.5 then
-		local curTime = GetTime()
-		if self.endTime < curTime then
-			StopTimer(self)
-			return
-		end
-		self:SetValue(100 - (curTime - self.startTime) / (self.endTime - self.startTime) * 100)
-		self.right:SetText(FormatTime(self.endTime - curTime))
-		timer = 0
+	local curTime = GetTime()
+	if self.endTime < curTime then
+		StopTimer(self)
+		return
 	end
+	self:SetValue(100 - (curTime - self.startTime) / (self.endTime - self.startTime) * 100)
+	self.right:SetText(FormatTime(self.endTime - curTime))
 end
 
 local OnEnter = function(self)
@@ -142,10 +137,10 @@ end
 
 local OnEvent = function(self, event, ...)
 	if event == "COMBAT_LOG_EVENT_UNFILTERED" then
-		local timestamp, eventType, sourceGUID, sourceName, sourceFlags, destGUID, destName, destFlags = select(1, ...)
+		local timestamp, eventType, sourceGUID, sourceName, sourceFlags, destGUID, destName, destFlags = ...
 		if band(sourceFlags, filter) == 0 then return end
 		if eventType == "SPELL_RESURRECT" or eventType == "SPELL_CAST_SUCCESS" then
-			local spell = GetSpellInfo(select(9, ...))
+			local spell = select(10, ...)
 			if spells[spell] and select(2, IsInInstance()) == 'raid' then
 				StartTimer(sourceName, spell)
 			end
