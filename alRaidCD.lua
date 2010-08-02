@@ -1,10 +1,11 @@
 -- Config start
 local anchor = "TOPLEFT"
-local x, y = 185, -20
+local x, y = 200, -20
 local width, height = 130, 14
-local spacing = 2
+local spacing = 3
+local icon_size = 14
 local backdrop_color = {0, 0, 0, 0.4}
-local border_color = {0, 0, 0, 0}
+local border_color = {0, 0, 0, 1}
 local texture = "Interface\\TargetingFrame\\UI-StatusBar"
 local showing = {
 	"raid" = true, 
@@ -50,6 +51,17 @@ local CreateFS = function(frame, fsize, fstyle)
 	local fstring = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 	fstring:SetFont(GameFontNormal:GetFont(), fsize, fstyle)
 	return fstring
+end
+
+local CreateBG = function(parent)
+	local bg = CreateFrame("Frame", nil, parent)
+	bg:SetPoint("TOPLEFT", parent, "TOPLEFT", -1, 1)
+	bg:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 1, -1)
+	bg:SetFrameStrata("LOW")
+	bg:SetBackdrop(backdrop)
+	bg:SetBackdropColor(unpack(backdrop_color))
+	bg:SetBackdropBorderColor(unpack(border_color))
+	return bg
 end
 
 local UpdatePositions = function()
@@ -105,19 +117,17 @@ local CreateBar = function()
 	bar:SetSize(width, height)
 	bar:SetStatusBarTexture(texture)
 	bar:SetMinMaxValues(0, 100)
-	bar.bg = CreateFrame("frame", nil, bar)
-	bar.bg:SetPoint("TOPLEFT", 0, 0)
-	bar.bg:SetPoint("BOTTOMRIGHT", 0, 0)
-	bar.bg:SetBackdrop(backdrop)
-	bar.bg:SetFrameStrata('LOW')
-	bar.bg:SetBackdropColor(unpack(backdrop_color))
-	bar.bg:SetBackdropBorderColor(unpack(border_color))
+	bar.bg = CreateBG(bar)
 	bar.left = CreateFS(bar, 12)
 	bar.left:SetPoint('LEFT', 2, 0)
 	bar.left:SetJustifyH('LEFT')
 	bar.right = CreateFS(bar, 12)
 	bar.right:SetPoint('RIGHT', -2, 0)
 	bar.right:SetJustifyH('RIGHT')
+	bar.icon = CreateFrame("button", nil, bar)
+	bar.icon:SetSize(icon_size, icon_size)
+	bar.icon:SetPoint("BOTTOMRIGHT", bar, "BOTTOMLEFT", -3, 0)
+	bar.icon.bg = CreateBG(bar.icon)
 	return bar
 end
 
@@ -128,6 +138,8 @@ local StartTimer = function(name, spellId)
 	bar.startTime = GetTime()
 	bar.left:SetText(name)
 	bar.right:SetText(FormatTime(spells[spellId]))
+	bar.icon:SetNormalTexture(icon)
+	bar.icon:GetNormalTexture():SetTexCoord(0.07, 0.93, 0.07, 0.93)
 	bar.spell = spell
 	bar:Show()
 	local color = RAID_CLASS_COLORS[select(2, UnitClass(name))]
