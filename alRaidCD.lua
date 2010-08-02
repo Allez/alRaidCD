@@ -7,7 +7,7 @@ local icon_size = 14
 local backdrop_color = {0, 0, 0, 0.4}
 local border_color = {0, 0, 0, 1}
 local texture = "Interface\\TargetingFrame\\UI-StatusBar"
-local showing = {
+local show = {
 	"raid" = true, 
 	"party" = true, 
 	"arena" = true,
@@ -159,7 +159,7 @@ local OnEvent = function(self, event, ...)
 		if band(sourceFlags, filter) == 0 then return end
 		if eventType == "SPELL_RESURRECT" or eventType == "SPELL_CAST_SUCCESS" then
 			local spellId = select(9, ...)
-			if spells[spellId] and showing[select(2, IsInInstance())] then
+			if spells[spellId] and show[select(2, IsInInstance())] then
 				StartTimer(sourceName, spellId)
 			end
 		end
@@ -171,8 +171,8 @@ addon:SetScript('OnEvent', OnEvent)
 addon:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 
 SlashCmdList["RaidCD"] = function(msg) 
-	StartTimer(UnitName('player'), GetSpellInfo(48477))
-	StartTimer(UnitName('player'), GetSpellInfo(29166))
-	StartTimer(UnitName('player'), GetSpellInfo(32182))
+	StartTimer(UnitName('player'), 48477)
+	StartTimer(UnitName('player'), 29166)
+	StartTimer(UnitName('player'), 32182)
 end
 SLASH_RaidCD1 = "/raidcd"
