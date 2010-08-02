@@ -6,17 +6,22 @@ local spacing = 2
 local backdrop_color = {0, 0, 0, 0.4}
 local border_color = {0, 0, 0, 0}
 local texture = "Interface\\TargetingFrame\\UI-StatusBar"
+local showing = {
+	"raid" = true, 
+	"party" = true, 
+	"arena" = true,
+}
 -- Config end
 
 
 local spells = {
-	[GetSpellInfo(48477)] = 600,	-- Rebirth
-	[GetSpellInfo(6203)]  = 900,	-- Soulstone
-	[GetSpellInfo(6346)]  = 180,	-- Fear Ward
-	[GetSpellInfo(29166)] = 180,	-- Innervate
-	[GetSpellInfo(32182)] = 300,	-- Heroism
-	[GetSpellInfo(2825)]  = 300,	-- Bloodlust
-	[GetSpellInfo(20608)] = 1800,	-- Reincarnation
+	[48477] = 600,	-- Rebirth
+	[6203] = 900,	-- Soulstone
+	[6346] = 180,	-- Fear Ward
+	[29166] = 180,	-- Innervate
+	[32182] = 300,	-- Heroism
+	[2825] = 300,	-- Bloodlust
+	[20608] = 1800,	-- Reincarnation
 }
 
 local filter = COMBATLOG_OBJECT_AFFILIATION_RAID + COMBATLOG_OBJECT_AFFILIATION_PARTY + COMBATLOG_OBJECT_AFFILIATION_MINE
@@ -116,12 +121,13 @@ local CreateBar = function()
 	return bar
 end
 
-local StartTimer = function(name, spell)
+local StartTimer = function(name, spellId)
 	local bar = CreateBar()
-	bar.endTime = GetTime() + spells[spell]
+	local spell, rank, icon = GetSpellInfo(spellId)
+	bar.endTime = GetTime() + spells[spellId]
 	bar.startTime = GetTime()
 	bar.left:SetText(name)
-	bar.right:SetText(FormatTime(spells[spell]))
+	bar.right:SetText(FormatTime(spells[spellId]))
 	bar.spell = spell
 	bar:Show()
 	local color = RAID_CLASS_COLORS[select(2, UnitClass(name))]
@@ -140,9 +146,9 @@ local OnEvent = function(self, event, ...)
 		local timestamp, eventType, sourceGUID, sourceName, sourceFlags, destGUID, destName, destFlags = ...
 		if band(sourceFlags, filter) == 0 then return end
 		if eventType == "SPELL_RESURRECT" or eventType == "SPELL_CAST_SUCCESS" then
-			local spell = select(10, ...)
-			if spells[spell] and select(2, IsInInstance()) == 'raid' then
-				StartTimer(sourceName, spell)
+			local spellId = select(9, ...)
+			if spells[spellId] and showing[select(2, IsInInstance())] then
+				StartTimer(sourceName, spellId)
 			end
 		end
 	end
