@@ -8,9 +8,9 @@ local backdrop_color = {0, 0, 0, 0.4}
 local border_color = {0, 0, 0, 1}
 local texture = "Interface\\TargetingFrame\\UI-StatusBar"
 local show = {
-	"raid" = true, 
-	"party" = true, 
-	"arena" = true,
+	raid = true,
+	party = true,
+	arena = true,
 }
 -- Config end
 
