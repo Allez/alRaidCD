@@ -163,12 +163,17 @@ local OnEvent = function(self, event, ...)
 				StartTimer(sourceName, spellId)
 			end
 		end
+	elseif event == "ZONE_CHANGED_NEW_AREA" and select(2, IsInInstance()) == "arena" then
+		for k, v in pairs(bars) do
+			StopTimer(v)
+		end
 	end
 end
 
 local addon = CreateFrame("frame")
 addon:SetScript('OnEvent', OnEvent)
 addon:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+addon:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 
 SlashCmdList["RaidCD"] = function(msg) 
 	StartTimer(UnitName('player'), 48477)
