@@ -1,6 +1,6 @@
 ## Interface: 30300
 ## Author: Allez
-## Title: alRaidCD
+## Title: |cff777777al|rRaidCD
 ## Version: 30300.1
 ## Notes: Raid cooldown tracker
 

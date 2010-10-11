@@ -1,9 +1,12 @@
 -- Config start
 local anchor = "TOPLEFT"
-local x, y = 200, -20
-local width, height = 130, 14
+local x, y = 29, -300
+local width, height = 110, 14
 local spacing = 3
 local icon_size = 14
+local font = 'Fonts\\VisitorR.TTF'
+local font_size = 10
+local font_style = 'OUTLINEMONOCHROME'
 local backdrop_color = {0, 0, 0, 0.4}
 local border_color = {0, 0, 0, 1}
 local texture = "Interface\\TargetingFrame\\UI-StatusBar"
@@ -49,7 +52,9 @@ end
 
 local CreateFS = function(frame, fsize, fstyle)
 	local fstring = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-	fstring:SetFont(GameFontNormal:GetFont(), fsize, fstyle)
+	fstring:SetFont(font, fsize, fstyle)
+	fstring:SetShadowColor(0, 0, 0, 1)
+	fstring:SetShadowOffset(0, 0)
 	return fstring
 end
 
@@ -118,11 +123,11 @@ local CreateBar = function()
 	bar:SetStatusBarTexture(texture)
 	bar:SetMinMaxValues(0, 100)
 	bar.bg = CreateBG(bar)
-	bar.left = CreateFS(bar, 12)
-	bar.left:SetPoint('LEFT', 2, 0)
+	bar.left = CreateFS(bar, font_size, font_style)
+	bar.left:SetPoint('LEFT', 2, 1)
 	bar.left:SetJustifyH('LEFT')
-	bar.right = CreateFS(bar, 12)
-	bar.right:SetPoint('RIGHT', -2, 0)
+	bar.right = CreateFS(bar, font_size, font_style)
+	bar.right:SetPoint('RIGHT', -2, 1)
 	bar.right:SetJustifyH('RIGHT')
 	bar.icon = CreateFrame("button", nil, bar)
 	bar.icon:SetSize(icon_size, icon_size)
