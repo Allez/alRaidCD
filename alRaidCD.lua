@@ -19,13 +19,12 @@ local show = {
 
 
 local spells = {
-	[48477] = 600,	-- Rebirth
+	[20484] = 1800,	-- Rebirth
 	[6203] = 900,	-- Soulstone
 	[6346] = 180,	-- Fear Ward
 	[29166] = 180,	-- Innervate
 	[32182] = 300,	-- Heroism
 	[2825] = 300,	-- Bloodlust
-	[20608] = 1800,	-- Reincarnation
 }
 
 local filter = COMBATLOG_OBJECT_AFFILIATION_RAID + COMBATLOG_OBJECT_AFFILIATION_PARTY + COMBATLOG_OBJECT_AFFILIATION_MINE
@@ -143,8 +142,10 @@ local StartTimer = function(name, spellId)
 	bar.startTime = GetTime()
 	bar.left:SetText(name)
 	bar.right:SetText(FormatTime(spells[spellId]))
-	bar.icon:SetNormalTexture(icon)
-	bar.icon:GetNormalTexture():SetTexCoord(0.07, 0.93, 0.07, 0.93)
+	if icon then
+		bar.icon:SetNormalTexture(icon)
+		bar.icon:GetNormalTexture():SetTexCoord(0.07, 0.93, 0.07, 0.93)
+	end
 	bar.spell = spell
 	bar:Show()
 	local color = RAID_CLASS_COLORS[select(2, UnitClass(name))]
