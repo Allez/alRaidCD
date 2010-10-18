@@ -182,8 +182,8 @@ addon:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 addon:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 
 SlashCmdList["RaidCD"] = function(msg) 
-	StartTimer(UnitName('player'), 48477)
-	StartTimer(UnitName('player'), 29166)
-	StartTimer(UnitName('player'), 32182)
+	StartTimer(UnitName('player'), 20484)
+	StartTimer(UnitName('player'), 6203)
+	StartTimer(UnitName('player'), 6346)
 end
 SLASH_RaidCD1 = "/raidcd"
