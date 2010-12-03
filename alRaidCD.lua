@@ -9,6 +9,7 @@ local font_size = 10
 local font_style = 'OUTLINEMONOCHROME'
 local backdrop_color = {0, 0, 0, 0.4}
 local border_color = {0, 0, 0, 1}
+local show_icon = true
 local texture = "Interface\\TargetingFrame\\UI-StatusBar"
 local show = {
 	raid = true,
@@ -17,9 +18,26 @@ local show = {
 }
 -- Config end
 
+local config = {
+	["Anchor point"] = anchor,
+	["X offset"] = x,
+	["Y offset"] = y,
+	["Bar width"] = width,
+	["Bar height"] = height,
+	["Bar spacing"] = spacing,
+	["Font"] = font,
+	["Font size"] = font_size,
+	["Font style"] = font_style,
+	["Texture"] = texture,
+	["Show icon"] = show_icon,
+	["Icon size"] = icon_size,
+}
+if UIConfig then
+	UIConfig["Raid cooldowns"] = config
+end
 
 local spells = {
-	[20484] = 1800,	-- Rebirth
+	[20484] = 600,	-- Rebirth
 	[6203] = 900,	-- Soulstone
 	[6346] = 180,	-- Fear Ward
 	[29166] = 180,	-- Innervate
@@ -49,9 +67,9 @@ local FormatTime = function(time)
 	end
 end
 
-local CreateFS = function(frame, fsize, fstyle)
+local CreateFS = function(frame)
 	local fstring = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-	fstring:SetFont(font, fsize, fstyle)
+	fstring:SetFont(config["Font"], config["Font size"], config["Font style"])
 	fstring:SetShadowColor(0, 0, 0, 1)
 	fstring:SetShadowOffset(0, 0)
 	return fstring
@@ -72,9 +90,9 @@ local UpdatePositions = function()
 	for i = 1, #bars do
 		bars[i]:ClearAllPoints()
 		if (i == 1) then
-			bars[i]:SetPoint(anchor, UIParent, anchor, x, y)
+			bars[i]:SetPoint(config["Anchor point"], UIParent, config["Anchor point"], config["X offset"], config["Y offset"])
 		else
-			bars[i]:SetPoint("TOPLEFT", bars[i-1], "BOTTOMLEFT", 0, -spacing)
+			bars[i]:SetPoint("TOPLEFT", bars[i-1], "BOTTOMLEFT", 0, -config["Bar spacing"])
 		end
 		bars[i].id = i
 	end
@@ -118,18 +136,18 @@ end
 
 local CreateBar = function()
 	local bar = CreateFrame("Statusbar", nil, UIParent)
-	bar:SetSize(width, height)
-	bar:SetStatusBarTexture(texture)
+	bar:SetSize(config["Bar width"], config["Bar height"])
+	bar:SetStatusBarTexture(config["Texture"])
 	bar:SetMinMaxValues(0, 100)
 	bar.bg = CreateBG(bar)
-	bar.left = CreateFS(bar, font_size, font_style)
+	bar.left = CreateFS(bar)
 	bar.left:SetPoint('LEFT', 2, 1)
 	bar.left:SetJustifyH('LEFT')
-	bar.right = CreateFS(bar, font_size, font_style)
+	bar.right = CreateFS(bar)
 	bar.right:SetPoint('RIGHT', -2, 1)
 	bar.right:SetJustifyH('RIGHT')
 	bar.icon = CreateFrame("button", nil, bar)
-	bar.icon:SetSize(icon_size, icon_size)
+	bar.icon:SetSize(config["Icon size"], config["Icon size"])
 	bar.icon:SetPoint("BOTTOMRIGHT", bar, "BOTTOMLEFT", -3, 0)
 	bar.icon.bg = CreateBG(bar.icon)
 	return bar
