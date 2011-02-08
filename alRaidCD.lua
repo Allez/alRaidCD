@@ -1,8 +1,8 @@
 -- Config start
 local anchor = "TOPLEFT"
-local x, y = 29, -300
+local x, y = 31, -300
 local width, height = 110, 14
-local spacing = 3
+local spacing = 5
 local icon_size = 14
 local font = 'Fonts\\VisitorR.TTF'
 local font_size = 10
@@ -19,9 +19,6 @@ local show = {
 -- Config end
 
 local config = {
-	["Anchor point"] = anchor,
-	["X offset"] = x,
-	["Y offset"] = y,
 	["Bar width"] = width,
 	["Bar height"] = height,
 	["Bar spacing"] = spacing,
@@ -59,6 +56,11 @@ local backdrop = {
 
 local bars = {}
 
+local anchorframe = CreateFrame("Frame", "RaidCD", UIParent)
+anchorframe:SetSize(width, height)
+anchorframe:SetPoint(anchor, x, y)
+if UIMovableFrames then tinsert(UIMovableFrames, anchorframe) end
+
 local FormatTime = function(time)
 	if time >= 60 then
 		return sformat('%.2d:%.2d', floor(time / 60), time % 60)
@@ -75,7 +77,7 @@ local CreateFS = function(frame)
 	return fstring
 end
 
-local CreateBG = function(parent)
+local CreateBG = CreateBG or function(parent)
 	local bg = CreateFrame("Frame", nil, parent)
 	bg:SetPoint("TOPLEFT", parent, "TOPLEFT", -1, 1)
 	bg:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 1, -1)
@@ -89,8 +91,8 @@ end
 local UpdatePositions = function()
 	for i = 1, #bars do
 		bars[i]:ClearAllPoints()
-		if (i == 1) then
-			bars[i]:SetPoint(config["Anchor point"], UIParent, config["Anchor point"], config["X offset"], config["Y offset"])
+		if i == 1 then
+			bars[i]:SetPoint("TOPLEFT", anchorframe, 0, 0)
 		else
 			bars[i]:SetPoint("TOPLEFT", bars[i-1], "BOTTOMLEFT", 0, -config["Bar spacing"])
 		end
@@ -148,7 +150,7 @@ local CreateBar = function()
 	bar.right:SetJustifyH('RIGHT')
 	bar.icon = CreateFrame("button", nil, bar)
 	bar.icon:SetSize(config["Icon size"], config["Icon size"])
-	bar.icon:SetPoint("BOTTOMRIGHT", bar, "BOTTOMLEFT", -3, 0)
+	bar.icon:SetPoint("BOTTOMRIGHT", bar, "BOTTOMLEFT", -5, 0)
 	bar.icon.bg = CreateBG(bar.icon)
 	return bar
 end
