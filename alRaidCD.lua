@@ -1,15 +1,14 @@
 -- Config start
 local anchor = "TOPLEFT"
-local x, y = 31, -300
+local x, y = 27, -200
 local width, height = 110, 14
-local spacing = 5
+local spacing = 3
 local icon_size = 14
-local font = 'Fonts\\VisitorR.TTF'
-local font_size = 10
-local font_style = 'OUTLINEMONOCHROME'
+local font = 'Fonts\\Arialn.TTF'
+local font_size = 12
+local font_style = 'OUTLINE'
 local backdrop_color = {0, 0, 0, 0.4}
-local border_color = {0, 0, 0, 1}
-local show_icon = true
+local border_color = {0.3, 0.3, 0.3, 1}
 local texture = "Interface\\TargetingFrame\\UI-StatusBar"
 local show = {
 	raid = true,
@@ -18,20 +17,6 @@ local show = {
 }
 -- Config end
 
-local config = {
-	["Bar width"] = width,
-	["Bar height"] = height,
-	["Bar spacing"] = spacing,
-	["Font"] = font,
-	["Font size"] = font_size,
-	["Font style"] = font_style,
-	["Texture"] = texture,
-	["Show icon"] = show_icon,
-	["Icon size"] = icon_size,
-}
-if UIConfig then
-	UIConfig["Raid cooldowns"] = config
-end
 
 local spells = {
 	[20484] = 600,	-- Rebirth
@@ -48,18 +33,16 @@ local sformat = string.format
 local floor = math.floor
 local timer = 0
 
+local mult = 768/string.match(GetCVar("gxResolution"), "%d+x(%d+)")/GetCVar("uiScale")
+local function scale(x) return mult*math.floor(x+.5) end
 local backdrop = {
-	bgFile = [=[Interface\ChatFrame\ChatFrameBackground]=],
-	edgeFile = [=[Interface\ChatFrame\ChatFrameBackground]=], edgeSize = 1,
-	insets = {top = 0, left = 0, bottom = 0, right = 0},
-}
+        bgFile = "Interface\\Buttons\\WHITE8x8",
+		edgeFile = "Interface\\Buttons\\WHITE8x8",
+		tile = false, tileSize = 0, edgeSize = scale(1), 
+		insets = { left = -scale(1), right = -scale(1), top = -scale(1), bottom = -scale(1)}
+    }
 
 local bars = {}
-
-local anchorframe = CreateFrame("Frame", "RaidCD", UIParent)
-anchorframe:SetSize(width, height)
-anchorframe:SetPoint(anchor, x, y)
-if UIMovableFrames then tinsert(UIMovableFrames, anchorframe) end
 
 local FormatTime = function(time)
 	if time >= 60 then
@@ -69,15 +52,15 @@ local FormatTime = function(time)
 	end
 end
 
-local CreateFS = function(frame)
+local CreateFS = function(frame, fsize, fstyle)
 	local fstring = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-	fstring:SetFont(config["Font"], config["Font size"], config["Font style"])
+	fstring:SetFont(font, fsize, fstyle)
 	fstring:SetShadowColor(0, 0, 0, 1)
 	fstring:SetShadowOffset(0, 0)
 	return fstring
 end
 
-local CreateBG = CreateBG or function(parent)
+local CreateBG = function(parent)
 	local bg = CreateFrame("Frame", nil, parent)
 	bg:SetPoint("TOPLEFT", parent, "TOPLEFT", -1, 1)
 	bg:SetPoint("BOTTOMRIGHT", parent, "BOTTOMRIGHT", 1, -1)
@@ -91,10 +74,10 @@ end
 local UpdatePositions = function()
 	for i = 1, #bars do
 		bars[i]:ClearAllPoints()
-		if i == 1 then
-			bars[i]:SetPoint("TOPLEFT", anchorframe, 0, 0)
+		if (i == 1) then
+			bars[i]:SetPoint(anchor, UIParent, anchor, x, y)
 		else
-			bars[i]:SetPoint("TOPLEFT", bars[i-1], "BOTTOMLEFT", 0, -config["Bar spacing"])
+			bars[i]:SetPoint("TOPLEFT", bars[i-1], "BOTTOMLEFT", 0, -spacing)
 		end
 		bars[i].id = i
 	end
@@ -138,19 +121,19 @@ end
 
 local CreateBar = function()
 	local bar = CreateFrame("Statusbar", nil, UIParent)
-	bar:SetSize(config["Bar width"], config["Bar height"])
-	bar:SetStatusBarTexture(config["Texture"])
+	bar:SetSize(width, height)
+	bar:SetStatusBarTexture(texture)
 	bar:SetMinMaxValues(0, 100)
 	bar.bg = CreateBG(bar)
-	bar.left = CreateFS(bar)
+	bar.left = CreateFS(bar, font_size, font_style)
 	bar.left:SetPoint('LEFT', 2, 1)
 	bar.left:SetJustifyH('LEFT')
-	bar.right = CreateFS(bar)
+	bar.right = CreateFS(bar, font_size, font_style)
 	bar.right:SetPoint('RIGHT', -2, 1)
 	bar.right:SetJustifyH('RIGHT')
 	bar.icon = CreateFrame("button", nil, bar)
-	bar.icon:SetSize(config["Icon size"], config["Icon size"])
-	bar.icon:SetPoint("BOTTOMRIGHT", bar, "BOTTOMLEFT", -5, 0)
+	bar.icon:SetSize(icon_size, icon_size)
+	bar.icon:SetPoint("BOTTOMRIGHT", bar, "BOTTOMLEFT", -3, 0)
 	bar.icon.bg = CreateBG(bar.icon)
 	return bar
 end

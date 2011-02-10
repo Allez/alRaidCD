@@ -3,6 +3,5 @@
 ## Title: |cff777777al|rRaidCD
 ## Version: 40000.1
 ## Notes: Raid cooldown tracker
-## OptionalDeps: alInterface
 
 alRaidCD.lua
