@@ -30,7 +30,7 @@ local spells = {
 }
 
 local cfg = {}
-if IsAddonLoaded("alInterface") then
+if IsAddOnLoaded("alInterface") then
 	local config = {
 		general = {
 			width = {
@@ -130,7 +130,7 @@ end
 
 local CreateFS = function(frame)
 	local fstring = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-	fstring:SetFont(config["Font"], config["Font size"], config["Font style"])
+	fstring:SetFont(font, font_size, font_style)
 	fstring:SetShadowColor(0, 0, 0, 1)
 	fstring:SetShadowOffset(0, 0)
 	return fstring
