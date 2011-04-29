@@ -18,21 +18,6 @@ local show = {
 }
 -- Config end
 
-local config = {
-	["Bar width"] = width,
-	["Bar height"] = height,
-	["Bar spacing"] = spacing,
-	["Font"] = font,
-	["Font size"] = font_size,
-	["Font style"] = font_style,
-	["Texture"] = texture,
-	["Show icon"] = show_icon,
-	["Icon size"] = icon_size,
-}
-if UIConfig then
-	UIConfig["Raid cooldowns"] = config
-end
-
 local spells = {
 	[20484] = 600,	-- Rebirth
 	[6203] = 900,	-- Soulstone
@@ -40,7 +25,81 @@ local spells = {
 	[29166] = 180,	-- Innervate
 	[32182] = 300,	-- Heroism
 	[2825] = 300,	-- Bloodlust
+	[80353] = 300,	-- Time Warp
+	[90355] = 300,	-- Ancient Hysteria
 }
+
+local cfg = {}
+if IsAddonLoaded("alInterface") then
+	local config = {
+		general = {
+			width = {
+				order = 1,
+				value = width,
+				type = "range",
+				min = 10,
+				max = 300,
+			},
+			height = {
+				order = 2,
+				value = height,
+				type = "range",
+				min = 5,
+				max = 30,
+			},
+			spacing = {
+				order = 3,
+				value = spacing,
+				type = "range",
+				min = 0,
+				max = 30,
+			},
+			iconsize = {
+				order = 4,
+				value = icon_size,
+				type = "range",
+				min = 5,
+				max = 70,
+			},
+			showicon = {
+				order = 5,
+				value = true,
+			},
+		},
+		showin = {
+			raid = {
+				order = 1,
+				value = true,
+			},
+			party = {
+				order = 2,
+				value = true,
+			},
+			arena = {
+				order = 3,
+				value = true,
+			},
+		},
+	}
+	
+	UIConfigGUI.raidcd = config
+	UIConfig.raidcd = cfg
+	
+	local frame = CreateFrame("Frame")
+	frame:RegisterEvent("VARIABLES_LOADED")
+	frame:SetScript("OnEvent", function(self, event)
+		width = cfg.general.width
+		height = cfg.general.height
+		spacing = cfg.general.spacing
+		icon_size = cfg.general.iconsize
+		show_icon = cfg.general.showicon
+		show = {
+			raid = cfg.showin.raid, 
+			party = cfg.showin.party, 
+			arena = cfg.showin.arena,
+		}
+	end)
+end
 
 local filter = COMBATLOG_OBJECT_AFFILIATION_RAID + COMBATLOG_OBJECT_AFFILIATION_PARTY + COMBATLOG_OBJECT_AFFILIATION_MINE
 local band = bit.band
@@ -94,7 +153,7 @@ local UpdatePositions = function()
 		if i == 1 then
 			bars[i]:SetPoint("TOPLEFT", anchorframe, 0, 0)
 		else
-			bars[i]:SetPoint("TOPLEFT", bars[i-1], "BOTTOMLEFT", 0, -config["Bar spacing"])
+			bars[i]:SetPoint("TOPLEFT", bars[i-1], "BOTTOMLEFT", 0, -spacing)
 		end
 		bars[i].id = i
 	end
@@ -138,8 +197,8 @@ end
 
 local CreateBar = function()
 	local bar = CreateFrame("Statusbar", nil, UIParent)
-	bar:SetSize(config["Bar width"], config["Bar height"])
-	bar:SetStatusBarTexture(config["Texture"])
+	bar:SetSize(width, height)
+	bar:SetStatusBarTexture(texture)
 	bar:SetMinMaxValues(0, 100)
 	bar.bg = CreateBG(bar)
 	bar.left = CreateFS(bar)
@@ -149,7 +208,7 @@ local CreateBar = function()
 	bar.right:SetPoint('RIGHT', -2, 1)
 	bar.right:SetJustifyH('RIGHT')
 	bar.icon = CreateFrame("button", nil, bar)
-	bar.icon:SetSize(config["Icon size"], config["Icon size"])
+	bar.icon:SetSize(icon_size, icon_size)
 	bar.icon:SetPoint("BOTTOMRIGHT", bar, "BOTTOMLEFT", -5, 0)
 	bar.icon.bg = CreateBG(bar.icon)
 	return bar
@@ -181,7 +240,7 @@ end
 
 local OnEvent = function(self, event, ...)
 	if event == "COMBAT_LOG_EVENT_UNFILTERED" then
-		local timestamp, eventType, sourceGUID, sourceName, sourceFlags, destGUID, destName, destFlags = ...
+		local timestamp, eventType, _, sourceGUID, sourceName, sourceFlags, destGUID, destName, destFlags = ...
 		if band(sourceFlags, filter) == 0 then return end
 		if eventType == "SPELL_RESURRECT" or eventType == "SPELL_CAST_SUCCESS" then
 			local spellId = select(9, ...)
