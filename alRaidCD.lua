@@ -4,9 +4,9 @@ local x, y = 31, -300
 local width, height = 110, 14
 local spacing = 5
 local icon_size = 14
-local font = 'Fonts\\VisitorR.TTF'
-local font_size = 10
-local font_style = 'OUTLINEMONOCHROME'
+local font = GameFontHighlight:GetFont()
+local font_size = 11
+local font_style = nil
 local backdrop_color = {0, 0, 0, 0.4}
 local border_color = {0, 0, 0, 1}
 local show_icon = true
@@ -30,7 +30,7 @@ local spells = {
 }
 
 local cfg = {}
-if IsAddonLoaded("alInterface") then
+if IsAddOnLoaded("alInterface") then
 	local config = {
 		general = {
 			width = {
@@ -81,10 +81,10 @@ if IsAddonLoaded("alInterface") then
 			},
 		},
 	}
-	
+
 	UIConfigGUI.raidcd = config
 	UIConfig.raidcd = cfg
-	
+
 	local frame = CreateFrame("Frame")
 	frame:RegisterEvent("VARIABLES_LOADED")
 	frame:SetScript("OnEvent", function(self, event)
@@ -128,11 +128,11 @@ local FormatTime = function(time)
 	end
 end
 
-local CreateFS = function(frame)
+local CreateFS = CreateFS or function(frame)
 	local fstring = frame:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-	fstring:SetFont(config["Font"], config["Font size"], config["Font style"])
+	fstring:SetFont(font, font_size, font_style)
 	fstring:SetShadowColor(0, 0, 0, 1)
-	fstring:SetShadowOffset(0, 0)
+	fstring:SetShadowOffset(0.5, -0.5)
 	return fstring
 end
 
