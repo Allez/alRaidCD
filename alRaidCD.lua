@@ -240,10 +240,10 @@ end
 
 local OnEvent = function(self, event, ...)
 	if event == "COMBAT_LOG_EVENT_UNFILTERED" then
-		local timestamp, eventType, _, sourceGUID, sourceName, sourceFlags, destGUID, destName, destFlags = ...
+		local timestamp, eventType, _, sourceGUID, sourceName, sourceFlags, _, destGUID, destName, destFlags = ...
 		if band(sourceFlags, filter) == 0 then return end
 		if eventType == "SPELL_RESURRECT" or eventType == "SPELL_CAST_SUCCESS" then
-			local spellId = select(9, ...)
+			local spellId = select(11, ...)
 			if spells[spellId] and show[select(2, IsInInstance())] then
 				StartTimer(sourceName, spellId)
 			end
