@@ -21,12 +21,14 @@ local show = {
 local spells = {
 	[20484] = 600,	-- Rebirth
 	[6203] = 900,	-- Soulstone
+	[95750] = 900,	-- Soulstone res
 	[6346] = 180,	-- Fear Ward
 	[29166] = 180,	-- Innervate
 	[32182] = 300,	-- Heroism
 	[2825] = 300,	-- Bloodlust
 	[80353] = 300,	-- Time Warp
 	[90355] = 300,	-- Ancient Hysteria
+	[61999] = 600,	-- Raise Ally
 }
 
 local cfg = {}
