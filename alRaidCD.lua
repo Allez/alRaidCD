@@ -1,7 +1,7 @@
 -- Config start
 local anchor = "TOPLEFT"
-local x, y = 31, -300
-local width, height = 110, 14
+local x, y = 12, -300
+local width, height = 130, 14
 local spacing = 5
 local icon_size = 14
 local font = GameFontHighlight:GetFont()
@@ -174,7 +174,7 @@ local BarUpdate = function(self, elapsed)
 		StopTimer(self)
 		return
 	end
-	self:SetValue(100 - (curTime - self.startTime) / (self.endTime - self.startTime) * 100)
+	self.status:SetValue(100 - (curTime - self.startTime) / (self.endTime - self.startTime) * 100)
 	self.right:SetText(FormatTime(self.endTime - curTime))
 end
 
@@ -198,21 +198,30 @@ local OnMouseDown = function(self, button)
 end
 
 local CreateBar = function()
-	local bar = CreateFrame("Statusbar", nil, UIParent)
+	local bar = CreateFrame("Frame", nil, UIParent)
 	bar:SetSize(width, height)
-	bar:SetStatusBarTexture(texture)
-	bar:SetMinMaxValues(0, 100)
-	bar.bg = CreateBG(bar)
+	bar.status = CreateFrame("Statusbar", nil, bar)
+	if show_icon then
+		bar.icon = CreateFrame("button", nil, bar)
+		bar.icon:SetSize(icon_size, icon_size)
+		bar.icon:SetPoint("BOTTOMLEFT", 0, 0)
+		bar.status:SetPoint("BOTTOMLEFT", bar.icon, "BOTTOMRIGHT", 5, 0)
+	else
+		bar.status:SetPoint("BOTTOMLEFT", 0, 0)
+	end
+	bar.status:SetPoint("BOTTOMRIGHT", 0, 0)
+	bar.status:SetHeight(height)
+	bar.status:SetStatusBarTexture(texture)
+	bar.status:SetMinMaxValues(0, 100)
+	bar.status:SetFrameLevel(bar:GetFrameLevel()-1)
 	bar.left = CreateFS(bar)
-	bar.left:SetPoint('LEFT', 2, 1)
+	bar.left:SetPoint('LEFT', bar.status, 2, 1)
 	bar.left:SetJustifyH('LEFT')
 	bar.right = CreateFS(bar)
-	bar.right:SetPoint('RIGHT', -2, 1)
+	bar.right:SetPoint('RIGHT', bar.status, -2, 1)
 	bar.right:SetJustifyH('RIGHT')
-	bar.icon = CreateFrame("button", nil, bar)
-	bar.icon:SetSize(icon_size, icon_size)
-	bar.icon:SetPoint("BOTTOMRIGHT", bar, "BOTTOMLEFT", -5, 0)
-	bar.icon.bg = CreateBG(bar.icon)
+	CreateBG(bar.icon)
+	CreateBG(bar.status)
 	return bar
 end
 
@@ -223,14 +232,14 @@ local StartTimer = function(name, spellId)
 	bar.startTime = GetTime()
 	bar.left:SetText(name)
 	bar.right:SetText(FormatTime(spells[spellId]))
-	if icon then
+	if icon and bar.icon then
 		bar.icon:SetNormalTexture(icon)
 		bar.icon:GetNormalTexture():SetTexCoord(0.07, 0.93, 0.07, 0.93)
 	end
 	bar.spell = spell
 	bar:Show()
 	local color = RAID_CLASS_COLORS[select(2, UnitClass(name))]
-	bar:SetStatusBarColor(color.r, color.g, color.b)
+	bar.status:SetStatusBarColor(color.r, color.g, color.b)
 	bar:SetScript("OnUpdate", BarUpdate)
 	bar:EnableMouse(true)
 	bar:SetScript("OnEnter", OnEnter)
