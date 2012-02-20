@@ -226,11 +226,17 @@ local CreateBar = function()
 end
 
 local StartTimer = function(name, spellId)
-	local bar = CreateBar()
 	local spell, rank, icon = GetSpellInfo(spellId)
+	for _, v in pairs(bars) do
+		if v.name == name and v.spell == spell then
+			return
+		end
+	end
+	local bar = CreateBar()
 	bar.endTime = GetTime() + spells[spellId]
 	bar.startTime = GetTime()
 	bar.left:SetText(name)
+	bar.name = name
 	bar.right:SetText(FormatTime(spells[spellId]))
 	if icon and bar.icon then
 		bar.icon:SetNormalTexture(icon)
